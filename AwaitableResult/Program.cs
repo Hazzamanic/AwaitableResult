@@ -11,6 +11,7 @@ async Result<double> Do(string a, string b)
 {
     var x = await Parse(a);
     var y = await Parse(b);
+    Console.WriteLine("Successfully parsed inputs");
     return await Divide(x, y);
 }
 
@@ -160,33 +161,4 @@ public struct ResultAsyncMethodBuilder<T>
         public ResultException(Exception innerException)
             : base("Result operation failed", innerException) { }
     }
-}
-
-public struct ResultTaskAwaiter<T> : ICriticalNotifyCompletion
-{
-    private readonly Task<Result<T>> _task;
-    private readonly TaskAwaiter<Result<T>> _awaiter;
-
-    public ResultTaskAwaiter(Task<Result<T>> task)
-    {
-        _task = task;
-        _awaiter = task.GetAwaiter();
-    }
-
-    public bool IsCompleted => _awaiter.IsCompleted;
-
-    public T GetResult()
-    {
-        var result = _awaiter.GetResult();
-        if (!result.IsSuccess)
-            ResultAsyncMethodBuilder<T>.SetError(result.Error);
-
-        return result.Value;
-    }
-
-    public void OnCompleted(Action continuation) =>
-        _awaiter.OnCompleted(continuation);
-
-    public void UnsafeOnCompleted(Action continuation) =>
-        _awaiter.UnsafeOnCompleted(continuation);
 }
